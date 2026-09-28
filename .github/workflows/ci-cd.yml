@@ -27,7 +27,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: mvn clean package -DskipTests
 
-        - name: Copy WAR to backend EC2
+ - name: Copy WAR to backend EC2
   uses: appleboy/scp-action@v1
   with:
     host: ${{ secrets.EC2_HOST }}
