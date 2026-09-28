@@ -1,3 +1,4 @@
+
 name: Three Tier CI/CD
 
 on:
@@ -13,6 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Test Backend SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "SSH connection successful"
+            hostname
+            whoami
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -27,23 +39,36 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: mvn clean package -DskipTests
 
- - name: Copy WAR to backend EC2
-  uses: appleboy/scp-action@v1
-  with:
-    host: ${{ secrets.EC2_HOST }}
-    username: ${{ secrets.EC2_USER }}
-    key: ${{ secrets.EC2_SSH_KEY }}
-    source: "backend/target/*.war"
-    target: "/tmp/"
-    strip_components: 2
+      - name: Copy WAR to backend EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "backend/target/*.war"
+          target: "/tmp/"
+          strip_components: 2
 
-- name: Deploy WAR to Tomcat
-  uses: appleboy/ssh-action@v1
-  with:
-    host: ${{ secrets.EC2_HOST }}
-    username: ${{ secrets.EC2_USER }}
-    key: ${{ secrets.EC2_SSH_KEY }}
-    script: |
-      sudo rm -f /opt/tomcat/webapps/backend-1.0.0.war
-      sudo rm -rf /opt/tomcat/webapps/backend-1.0.0
-      sudo mv /tmp/backend-1.0.0.war /opt/tomcat/webapps/
+      - name: Deploy WAR to Tomcat
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo rm -f /opt/tomcat/webapps/backend-1.0.0.war
+            sudo rm -rf /opt/tomcat/webapps/backend-1.0.0
+            sudo mv /tmp/backend-1.0.0.war /opt/tomcat/webapps/
+
+      - name: Restart Tomcat
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo systemctl restart tomcat
+            sleep 10
+            sudo systemctl status tomcat --no-pager
+
+
