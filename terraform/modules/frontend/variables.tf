@@ -17,3 +17,4 @@ variable "security_group_ids" {
   description = "Security group IDs"
   type        = list(string)
 }
+
