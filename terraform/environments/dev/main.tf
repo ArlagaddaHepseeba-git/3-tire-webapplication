@@ -59,3 +59,24 @@ module "dev_server" {
   name               = "three-tier-dev-server"
   security_group_ids = [module.dev_security_group.security_group_id]
 }
+module "application_security_groups" {
+  source = "../../modules/application-security-groups"
+}
+
+module "backend_server" {
+  source = "../../modules/backend"
+
+  ami                = "ami-007b1f3fdea0383d9"
+  instance_type      = var.instance_type
+  name               = "three-tier-backend"
+  security_group_ids = [module.application_security_groups.backend_security_group_id]
+}
+
+module "frontend_server" {
+  source = "../../modules/frontend"
+
+  ami                = "ami-007b1f3fdea0383d9"
+  instance_type      = var.instance_type
+  name               = "three-tier-frontend"
+  security_group_ids = [module.application_security_groups.frontend_security_group_id]
+}
