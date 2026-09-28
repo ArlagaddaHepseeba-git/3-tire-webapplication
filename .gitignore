@@ -41,3 +41,13 @@ Thumbs.db
 # ===== SSL certificates (do NOT commit private keys) =====
 backend/src/main/resources/ssl/
 ssl/
+#=======terraform=============
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
